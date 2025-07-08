@@ -1,22 +1,44 @@
-# get_papers_list/exporter.py
-
 import csv
+import os
 from typing import List, Dict
-import sys
 
-def export_to_csv(papers: List[Dict], file: str = None) -> None:
-    fieldnames = ["PubmedID", "Title", "Publication Date", "Non-academic Author(s)", "Company Affiliation(s)", "Corresponding Author Email"]
-    output = open(file, mode="w", newline="", encoding="utf-8") if file else sys.stdout
-    writer = csv.DictWriter(output, fieldnames=fieldnames)
-    writer.writeheader()
-    for paper in papers:
-        writer.writerow({
-            "PubmedID": paper["PubmedID"],
-            "Title": paper["Title"],
-            "Publication Date": paper["PublicationDate"],
-            "Non-academic Author(s)": "; ".join(paper["NonAcademicAuthors"]),
-            "Company Affiliation(s)": "; ".join(paper["CompanyAffiliations"]),
-            "Corresponding Author Email": paper["CorrespondingEmail"],
-        })
-    if file:
-        output.close()
+def export_to_csv(papers: List[Dict], filename: str = None) -> None:
+    if not papers:
+        print("No papers to export.")
+        return
+
+    headers = [
+        "PubmedID",
+        "Title",
+        "Publication Date",
+        "Non-academic Author(s)",
+        "Company Affiliation(s)",
+        "Corresponding Author Email"
+    ]
+
+    if filename:
+        # Check if file exists to decide whether to write the header
+        file_exists = os.path.isfile(filename)
+        mode = 'a' if file_exists else 'w'
+
+        with open(filename, mode, newline='', encoding='utf-8') as csvfile:
+            writer = csv.DictWriter(csvfile, fieldnames=headers)
+
+            if not file_exists:
+                writer.writeheader()
+
+            for paper in papers:
+                writer.writerow({
+                    "PubmedID": paper.get("PubmedID", ""),
+                    "Title": paper.get("Title", ""),
+                    "Publication Date": paper.get("PublicationDate", ""),
+                    "Non-academic Author(s)": "; ".join(paper.get("NonAcademicAuthors", [])),
+                    "Company Affiliation(s)": "; ".join(paper.get("CompanyAffiliations", [])),
+                    "Corresponding Author Email": paper.get("CorrespondingEmail", "")
+                })
+
+        print(f"Exported {len(papers)} paper(s) to {filename}")
+    else:
+        # Print to console if no filename provided
+        for paper in papers:
+            print(f"{paper['PubmedID']}: {paper['Title']}")

@@ -1,0 +1,23 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*.so
+
+# Virtual environments
+.venv/
+.env/
+poetry.lock
+
+# VS Code project settings
+.vscode/
+
+# System-specific files
+.DS_Store
+Thumbs.db
+
+# PubMed output
+*.csv
+pubmed_response.xml
+
+# LLM model files (don't upload large binaries)
+models/*.gguf*

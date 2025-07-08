@@ -3,11 +3,12 @@
 from typing import List, Dict, Any
 import requests
 import xml.etree.ElementTree as ET
+import re
 
 EMAIL = "youremail@example.com"
 BASE_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils"
 
-def search_pubmed(query: str, max_results: int = 50) -> List[str]:
+def search_pubmed(query: str, max_results: int = 100) -> List[str]:
     params = {
         "db": "pubmed",
         "term": query,
@@ -29,6 +30,12 @@ def fetch_details(pubmed_ids: List[str]) -> List[Dict[str, Any]]:
     }
     response = requests.get(f"{BASE_URL}/efetch.fcgi", params=params)
     response.raise_for_status()
+
+    # Save XML for debugging
+    with open("pubmed_response.xml", "w", encoding="utf-8") as f:
+        f.write(response.text)
+
+    
     return parse_pubmed_xml(response.text)
 
 def parse_pubmed_xml(xml_data: str) -> List[Dict[str, Any]]:
@@ -43,13 +50,20 @@ def parse_pubmed_xml(xml_data: str) -> List[Dict[str, Any]]:
             "Authors": [],
         }
 
+        if(data["PubmedID"] == "40624691"):
+            print("here")
+
         authors = article.findall(".//Author")
         for author in authors:
             name = f"{author.findtext('ForeName', '')} {author.findtext('LastName', '')}".strip()
             affiliation = author.findtext(".//AffiliationInfo/Affiliation", default="")
+
             email = ""
-            if affiliation and "@" in affiliation:
-                email = affiliation.split()[-1]
+            if affiliation:
+                match = re.search(r"[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+", affiliation)
+                if match:
+                    email = match.group(0)
+                
             data["Authors"].append({
                 "Name": name,
                 "Affiliation": affiliation,
