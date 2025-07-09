@@ -8,7 +8,9 @@ import re
 EMAIL = "youremail@example.com"
 BASE_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils"
 
-def search_pubmed(query: str, max_results: int = 100) -> List[str]:
+
+# max_results is for batch size 
+def search_pubmed(query: str, max_results: int = 10) -> List[str]:
     params = {
         "db": "pubmed",
         "term": query,
@@ -50,6 +52,7 @@ def parse_pubmed_xml(xml_data: str) -> List[Dict[str, Any]]:
             "Authors": [],
         }
 
+        # Test case for query "covid" having a Brazilian University classified as non-academic 
         if(data["PubmedID"] == "40624691"):
             print("here")
 
